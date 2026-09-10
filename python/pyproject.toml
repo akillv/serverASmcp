@@ -1,6 +1,6 @@
 [project]
 name = "serverasmcp"
-version = "0.3.0"
+version = "0.4.0"
 description = "ServerAsMcp — MCP deployment server for AI agents to execute commands on remote Linux servers"
 readme = "README.md"
 license = { text = "MIT" }
