@@ -10,6 +10,7 @@ Let your agent deploy to real Linux servers, configure DNS, and fix the deployme
 [![PyPI version](https://img.shields.io/pypi/v/serverasmcp?style=flat-square&color=3775a9)](https://pypi.org/project/serverasmcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/Protocol-MCP-blue?style=flat-square)](https://modelcontextprotocol.io)
+[![GitHub stars](https://img.shields.io/github/stars/akillv/serverASmcp?style=flat-square&color=0969da)](https://github.com/akillv/serverASmcp/stargazers)
 
 [Quick Start](#-quick-start) · [Who It Is For](#-who-this-is-for) · [Security](#-security) · [Tools](#-tools) · [Deployment Skill](#-deployment-skill) · [Contributing](https://github.com/akillv/serverASmcp/blob/main/CONTRIBUTING.md)
 

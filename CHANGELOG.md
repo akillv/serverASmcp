@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Marketing positioning, repository community files, launch assets, demo script, and 14-day launch calendar.
 - A security-first quick start that recommends SSH-key authentication.
+- A contextual repository star CTA, GitHub stars badge, five example deployment specifications, and a rendered 1280×640 social preview.
+- A repeatable script for applying GitHub About metadata and topics when an authenticated token is available.
 
 ## [0.4.6]
 
