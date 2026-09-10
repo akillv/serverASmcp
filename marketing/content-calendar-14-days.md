@@ -65,7 +65,7 @@ This calendar assumes Day 1 is the day you finish assets, not necessarily the da
 - [ ] Submit to two MCP directories.
 - [ ] Add the listing links to a private launch tracker.
 
-**Completion signal:** Package pages and directories no longer lead with unrestricted root access only.
+**Completion signal:** Package pages and directories no longer lead only with a raw root-access hook.
 
 ## Day 6 — Soft launch
 
