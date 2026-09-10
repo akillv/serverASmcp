@@ -1,8 +1,8 @@
 {
   "name": "serverasmcp",
   "version": "0.4.6",
-  "description": "MCP server that gives AI agents unrestricted root SSH access to unlimited Linux servers. Execute any command, deploy files, configure Cloudflare DNS, and self-heal deployments until production is live.",
-  "longDescription": "ServerAsMcp is a Model Context Protocol (MCP) server that lets AI agents (Codex, Claude, Cursor, etc.) connect to and control unlimited remote Linux servers over SSH. Define servers via SERVER_N_HOST/SERVER_N_PASSWORD env vars, and your agent can execute any shell command as root, upload files via SFTP, configure Cloudflare DNS to make apps publicly live, and run a self-healing deployment loop that reads logs, diagnoses errors, fixes them, and retries until production is confirmed. Includes a built-in deployment skill (get_skill tool) that teaches the agent the full 7-phase workflow: server registration, Git detection, runtime installation, application deployment, systemd service configuration, Cloudflare DNS setup, and production verification.",
+  "description": "Agent-native deployment MCP for Linux servers: run commands, deploy files, configure Cloudflare DNS, and self-heal until production is live.",
+  "longDescription": "ServerAsMcp is a Model Context Protocol (MCP) server that lets AI agents (Codex, Claude, Cursor, etc.) connect to and control unlimited remote Linux servers over SSH. Define servers through SSH-key or password environment variables, and your agent can execute shell commands with the configured SSH identity, upload files via SFTP, configure Cloudflare DNS to make apps publicly live, and run a self-healing deployment loop that reads logs, diagnoses errors, fixes them, and retries until production is confirmed. Includes a built-in deployment skill (get_skill tool) that teaches the agent the full 7-phase workflow: server registration, Git detection, runtime installation, application deployment, systemd service configuration, Cloudflare DNS setup, and production verification.",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -15,15 +15,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akillv/serverASmcp.git"
+    "url": "git+https://github.com/arun-raze19/serverASmcp.git"
   },
-  "homepage": "https://github.com/akillv/serverASmcp#readme",
+  "homepage": "https://github.com/arun-raze19/serverASmcp#readme",
   "bugs": {
-    "url": "https://github.com/akillv/serverASmcp/issues"
+    "url": "https://github.com/arun-raze19/serverASmcp/issues"
   },
   "author": {
     "name": "Arun",
-    "url": "https://github.com/akillv"
+    "url": "https://github.com/arun-raze19"
   },
   "scripts": {
     "build": "tsc",

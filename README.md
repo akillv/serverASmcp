@@ -332,34 +332,37 @@ Agent: "Fixed missing dependency. App is now running."
 
 ## 🔒 Security
 
-> **⚠️ READ THIS BEFORE USE**
-
-This tool gives AI agents **unrestricted root access** to your servers. This is by design.
+ServerAsMcp is **deliberately unrestricted for single-operator environments**. This is the product’s core tradeoff: the configured agent can execute arbitrary commands as the configured SSH identity, including commands that change or destroy server data.
 
 ### What this means
 
-- The agent can execute **literally any command** — including `rm -rf /`, `reboot`, `shutdown`
-- There is **no sandbox**, no allowlist, no confirmation gate
-- SSH credentials are stored in your MCP client config (or `~/.mcp-deploy/servers.json` for runtime-added servers)
+- There is no sandbox, allowlist, policy engine, RBAC, or multi-user authorization layer
+- A compromised or misled agent can execute arbitrary commands on every configured server
+- SSH credentials are stored in local MCP client configuration, or in `~/.mcp-deploy/servers.json` for runtime-added servers
 
-### What protects you
+### What the design does
 
-| Protection | How |
+| Property | How |
 |-----------|-----|
-| **Audit log** | Every operation logged to `~/.mcp-deploy/audit.log` with timestamp, tool, args, and result |
-| **Credential isolation** | Passwords/keys live in your MCP config — the agent sees tools, not raw credentials |
-| **stdio transport** | No network listener — the MCP server runs as a subprocess of your agent client |
-| **Single-user design** | Only you (the operator) can configure which servers the agent can access |
+| **Audit log** | Operations are logged locally to `~/.mcp-deploy/audit.log` with timestamp, tool, arguments, and result |
+| **Local configuration** | Credentials belong in local MCP config, not source code or shared documents |
+| **stdio transport** | The MCP server runs as a local subprocess and opens no network listener |
+| **Explicit scope** | Only the operator chooses which servers and SSH identities are configured |
 
-### Recommendations
+### Recommended setup
 
-1. **Use SSH keys** instead of passwords
-2. **Only connect trusted agents** — you are giving them root
-3. **Review the audit log** regularly: `cat ~/.mcp-deploy/audit.log`
-4. **Test on staging servers** before production
-5. **Rotate credentials** if you suspect compromise
+1. **Use SSH keys**, preferably a dedicated key with limited access
+2. **Use a disposable or staging VPS first**
+3. **Connect only trusted agents**—never use an untrusted or prompt-injection-prone agent as a production operator
+4. **Review the audit log**: `cat ~/.mcp-deploy/audit.log`
+5. **Rotate credentials immediately** if a client, agent, or key may be compromised
 
----
+### Not suitable for
+
+- Untrusted agents
+- Multi-tenant platforms
+- Shared production fleets operated by large teams
+- Environments requiring centralized zero-trust policy enforcement
 
 ## 🏗️ Architecture
 
@@ -426,7 +429,7 @@ uvx serverasmcp
 ### From source
 
 ```bash
-git clone https://github.com/akillv/serverASmcp.git
+git clone https://github.com/arun-raze19/serverASmcp.git
 cd serverASmcp
 npm install && npm run build
 node dist/index.js
@@ -437,7 +440,7 @@ node dist/index.js
 ## 🤝 Contributing
 
 ```bash
-git clone https://github.com/akillv/serverASmcp.git
+git clone https://github.com/arun-raze19/serverASmcp.git
 cd serverASmcp
 npm install
 npm run build

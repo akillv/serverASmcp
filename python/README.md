@@ -2,18 +2,59 @@
 
 # 🚀 ServerAsMcp
 
-**Give your AI agents unrestricted root access to unlimited Linux servers — via MCP.**
+**The deployment MCP for agents that actually ships.**
+
+Let your agent deploy to real Linux servers, configure DNS, and fix the deployment until it is live.
 
 [![npm version](https://img.shields.io/npm/v/serverasmcp?style=flat-square&color=cb3837)](https://www.npmjs.com/package/serverasmcp)
 [![PyPI version](https://img.shields.io/pypi/v/serverasmcp?style=flat-square&color=3775a9)](https://pypi.org/project/serverasmcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/Protocol-MCP-blue?style=flat-square)](https://modelcontextprotocol.io)
 
-[Quick Start](#-quick-start) · [Configuration](#-configuration) · [Tools](#-tools) · [Deployment Skill](#-deployment-skill) · [Security](#-security) · [Contributing](#-contributing)
+[Quick Start](#-quick-start) · [Who It Is For](#-who-this-is-for) · [Security](#-security) · [Tools](#-tools) · [Deployment Skill](#-deployment-skill) · [Contributing](https://github.com/arun-raze19/serverASmcp/blob/main/CONTRIBUTING.md)
 
 </div>
 
 ---
+
+## What is ServerAsMcp?
+
+ServerAsMcp is an **agent-native deployment MCP** for real Linux servers.
+
+Configure a server once. Then ask Codex, Claude, Cursor, or another MCP agent to deploy a repository, install dependencies, create a systemd service, update Cloudflare DNS, and verify the public HTTPS URL. If deployment fails, the agent can read logs, diagnose the issue, apply a fix, and retry until production is live.
+
+> **⚠️ Trust boundary:** ServerAsMcp is deliberately unrestricted for single-operator environments. The configured agent can execute arbitrary commands as the configured SSH identity. Use SSH-key authentication, keep credentials local, and do not connect untrusted agents or shared multi-tenant systems.
+
+## 🎯 Who this is for
+
+- Solo founders and indie hackers who want a repo live without building CI/CD first
+- Codex, Claude, and Cursor power users who want agent-native operations
+- Self-hosters who prefer direct control of their VPSes
+- Consultants managing several small customer servers
+- Small teams that want production deployment without Kubernetes complexity
+
+### Who this is not for
+
+- Enterprises requiring centralized RBAC, policy engines, or zero-trust controls
+- Multi-tenant platforms with untrusted agents
+- Shared production fleets operated by large teams
+
+## 🚦 Why use it?
+
+| Without ServerAsMcp | With ServerAsMcp |
+|---|---|
+| Write deployment scripts or pipeline YAML | Ask the agent to deploy |
+| SSH into each server separately | Let the agent target one or all servers |
+| Manually create DNS records | Let the agent update Cloudflare DNS |
+| Read logs and restart services yourself | Let the agent diagnose and self-heal |
+| Hope the app is live | Verify `systemd`, localhost, and the public URL |
+
+| Approach | Setup | Multi-server | DNS | Self-healing | Agent-native |
+|---|---|---|---|---|---|
+| Manual SSH | Low | Manual | Manual | No | No |
+| Traditional CI/CD | High | Possible | Manual | Limited | No |
+| Managed PaaS | Low | Often limited | Often built in | Some | Limited |
+| **ServerAsMcp** | One MCP config | Unlimited by design | Cloudflare built in | Core workflow | Yes |
 
 ## What is ServerAsMcp?
 
@@ -48,7 +89,29 @@ No Web UI. No multi-user complexity. No sandbox. Just raw power for a single ope
 
 ## 🚀 Quick Start
 
-### Option 1: `npx` (Node.js)
+### Option 1: SSH key auth (recommended)
+
+```json
+{
+  "mcpServers": {
+    "deploy": {
+      "command": "npx",
+      "args": ["-y", "serverasmcp"],
+      "env": {
+        "SERVER_1_NAME": "web-1",
+        "SERVER_1_HOST": "203.0.113.5",
+        "SERVER_1_USER": "root",
+        "SERVER_1_KEY_PATH": "/home/you/.ssh/id_rsa"
+      }
+    }
+  }
+}
+```
+
+That's it. Your agent now has root access to all configured servers.
+
+
+### Option 2: `npx` (Node.js)
 
 Copy-paste into your MCP client config (Claude Desktop, Codex, Cursor, etc.):
 
@@ -74,7 +137,7 @@ Copy-paste into your MCP client config (Claude Desktop, Codex, Cursor, etc.):
 }
 ```
 
-### Option 2: `uvx` (Python / uv)
+### Option 3: `uvx` (Python / uv)
 
 ```json
 {
@@ -92,28 +155,6 @@ Copy-paste into your MCP client config (Claude Desktop, Codex, Cursor, etc.):
   }
 }
 ```
-
-### Option 3: SSH key auth (recommended)
-
-```json
-{
-  "mcpServers": {
-    "deploy": {
-      "command": "npx",
-      "args": ["-y", "serverasmcp"],
-      "env": {
-        "SERVER_1_NAME": "web-1",
-        "SERVER_1_HOST": "203.0.113.5",
-        "SERVER_1_USER": "root",
-        "SERVER_1_KEY_PATH": "/home/you/.ssh/id_rsa"
-      }
-    }
-  }
-}
-```
-
-That's it. Your agent now has root access to all configured servers.
-
 ---
 
 ## ⚙️ Configuration
@@ -297,34 +338,37 @@ Agent: "Fixed missing dependency. App is now running."
 
 ## 🔒 Security
 
-> **⚠️ READ THIS BEFORE USE**
-
-This tool gives AI agents **unrestricted root access** to your servers. This is by design.
+ServerAsMcp is **deliberately unrestricted for single-operator environments**. This is the product’s core tradeoff: the configured agent can execute arbitrary commands as the configured SSH identity, including commands that change or destroy server data.
 
 ### What this means
 
-- The agent can execute **literally any command** — including `rm -rf /`, `reboot`, `shutdown`
-- There is **no sandbox**, no allowlist, no confirmation gate
-- SSH credentials are stored in your MCP client config (or `~/.mcp-deploy/servers.json` for runtime-added servers)
+- There is no sandbox, allowlist, policy engine, RBAC, or multi-user authorization layer
+- A compromised or misled agent can execute arbitrary commands on every configured server
+- SSH credentials are stored in local MCP client configuration, or in `~/.mcp-deploy/servers.json` for runtime-added servers
 
-### What protects you
+### What the design does
 
-| Protection | How |
+| Property | How |
 |-----------|-----|
-| **Audit log** | Every operation logged to `~/.mcp-deploy/audit.log` with timestamp, tool, args, and result |
-| **Credential isolation** | Passwords/keys live in your MCP config — the agent sees tools, not raw credentials |
-| **stdio transport** | No network listener — the MCP server runs as a subprocess of your agent client |
-| **Single-user design** | Only you (the operator) can configure which servers the agent can access |
+| **Audit log** | Operations are logged locally to `~/.mcp-deploy/audit.log` with timestamp, tool, arguments, and result |
+| **Local configuration** | Credentials belong in local MCP config, not source code or shared documents |
+| **stdio transport** | The MCP server runs as a local subprocess and opens no network listener |
+| **Explicit scope** | Only the operator chooses which servers and SSH identities are configured |
 
-### Recommendations
+### Recommended setup
 
-1. **Use SSH keys** instead of passwords
-2. **Only connect trusted agents** — you are giving them root
-3. **Review the audit log** regularly: `cat ~/.mcp-deploy/audit.log`
-4. **Test on staging servers** before production
-5. **Rotate credentials** if you suspect compromise
+1. **Use SSH keys**, preferably a dedicated key with limited access
+2. **Use a disposable or staging VPS first**
+3. **Connect only trusted agents**—never use an untrusted or prompt-injection-prone agent as a production operator
+4. **Review the audit log**: `cat ~/.mcp-deploy/audit.log`
+5. **Rotate credentials immediately** if a client, agent, or key may be compromised
 
----
+### Not suitable for
+
+- Untrusted agents
+- Multi-tenant platforms
+- Shared production fleets operated by large teams
+- Environments requiring centralized zero-trust policy enforcement
 
 ## 🏗️ Architecture
 
@@ -391,7 +435,7 @@ uvx serverasmcp
 ### From source
 
 ```bash
-git clone https://github.com/akillv/serverASmcp.git
+git clone https://github.com/arun-raze19/serverASmcp.git
 cd serverASmcp
 npm install && npm run build
 node dist/index.js
@@ -402,7 +446,7 @@ node dist/index.js
 ## 🤝 Contributing
 
 ```bash
-git clone https://github.com/akillv/serverASmcp.git
+git clone https://github.com/arun-raze19/serverASmcp.git
 cd serverASmcp
 npm install
 npm run build
