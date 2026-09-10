@@ -42,7 +42,7 @@ cursor
 - Enable squash merging only if that matches the existing release workflow.
 - Protect `main` from force pushes.
 - Add topics from the list above.
-- Upload a 1280×640 social preview image showing a terminal, a browser showing a live HTTPS URL, and the title:  
+- Upload a 1280×640 social preview image showing a terminal, a browser showing a live HTTPS URL, and the title:
   **One prompt. One VPS. Verified production.**
 - Link the GitHub package metadata to the same repository URL.
 
