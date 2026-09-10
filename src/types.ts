@@ -72,36 +72,50 @@ export function getConfigDir(): string {
   return CONFIG_DIR;
 }
 
-// ─── Single-server env fallback (backward compat) ────────────────────────────
+// ─── Parse env-based multi-server config ─────────────────────────────────────
+// Format: SERVER_1_HOST, SERVER_1_PASSWORD, SERVER_2_HOST, SERVER_2_PASSWORD, ...
+// Also supports: SERVER_1_USER, SERVER_1_PORT, SERVER_1_KEY_PATH, SERVER_1_KEY
+// And named: SERVER_1_NAME (defaults to "server-1", "server-2", etc.)
 
-export function loadEnvServer(): ServerEntry | null {
-  const host = process.env.DEPLOY_HOST;
-  if (!host) return null;
+export function loadEnvServers(): ServerEntry[] {
+  const servers: ServerEntry[] = [];
+  let n = 1;
 
-  const password = process.env.DEPLOY_PASSWORD;
-  const privateKeyPath = process.env.DEPLOY_KEY_PATH;
-  const privateKey = process.env.DEPLOY_KEY;
+  while (process.env[`SERVER_${n}_HOST`]) {
+    const host = process.env[`SERVER_${n}_HOST`]!;
+    const password = process.env[`SERVER_${n}_PASSWORD`];
+    const privateKeyPath = process.env[`SERVER_${n}_KEY_PATH`];
+    const privateKey = process.env[`SERVER_${n}_KEY`];
+    const name = process.env[`SERVER_${n}_NAME`] || `server-${n}`;
+    const username = process.env[`SERVER_${n}_USER`] || "root";
+    const port = parseInt(process.env[`SERVER_${n}_PORT`] || "22", 10);
 
-  let authMethod: "password" | "private_key";
-  if (privateKeyPath || privateKey) {
-    authMethod = "private_key";
-  } else if (password) {
-    authMethod = "password";
-  } else {
-    return null;
+    let authMethod: "password" | "private_key";
+    if (privateKeyPath || privateKey) {
+      authMethod = "private_key";
+    } else if (password) {
+      authMethod = "password";
+    } else {
+      n++;
+      continue;
+    }
+
+    servers.push({
+      id: `env-server-${n}`,
+      name,
+      host,
+      port,
+      username,
+      authMethod,
+      password,
+      privateKeyPath,
+      privateKey,
+    });
+
+    n++;
   }
 
-  return {
-    id: "env-default",
-    name: "default",
-    host,
-    port: parseInt(process.env.DEPLOY_PORT || "22", 10),
-    username: process.env.DEPLOY_USER || "root",
-    authMethod,
-    password,
-    privateKeyPath,
-    privateKey,
-  };
+  return servers;
 }
 
 // ─── Audit ───────────────────────────────────────────────────────────────────

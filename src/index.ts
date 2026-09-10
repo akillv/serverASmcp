@@ -9,11 +9,11 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
   loadServers,
+  loadEnvServers,
   addServer,
   removeServer,
   findServer,
   findServerByName,
-  loadEnvServer,
   getConfigDir,
   type ServerEntry,
   type AuditEntry,
@@ -52,10 +52,23 @@ const server = new McpServer(
   { capabilities: { tools: {} } }
 );
 
-// ─── Helper: resolve server by ID or name ────────────────────────────────────
+// ─── Get all servers (env-based + file-based) ────────────────────────────────
+
+function getAllServers(): ServerEntry[] {
+  const fileServers = loadServers();
+  const envServers = loadEnvServers();
+  const all = [...envServers];
+  for (const fs of fileServers) {
+    if (!all.find(s => s.id === fs.id)) {
+      all.push(fs);
+    }
+  }
+  return all;
+}
 
 function resolveServer(idOrName: string): ServerEntry | undefined {
-  return findServer(idOrName) || findServerByName(idOrName) || (idOrName === "default" ? loadEnvServer() ?? undefined : undefined);
+  const all = getAllServers();
+  return all.find(s => s.id === idOrName) || all.find(s => s.name === idOrName);
 }
 
 // ─── Audit helper ────────────────────────────────────────────────────────────
@@ -81,14 +94,14 @@ function audit(toolName: string, serverName: string, args: Record<string, unknow
 
 server.tool(
   "get_skill",
-  "Get the ServerAsMcp deployment skill instructions. Call this FIRST before deploying to understand the full workflow.",
+  "Get the ServerAsMcp deployment skill instructions. Call this FIRST before deploying.",
   {},
   async () => {
     if (skillContent) {
       return { content: [{ type: "text", text: skillContent }] };
     }
     return {
-      content: [{ type: "text", text: "Skill file not found. Follow these steps:\n1. add_server → check_status\n2. Git push if remote exists\n3. Install runtimes on server\n4. Clone repo → install deps\n5. Create systemd service → start\n6. Cloudflare DNS → point to server\n7. Verify loop → fix errors until live" }],
+      content: [{ type: "text", text: "Skill not found. Follow: add_server → check_status → git push → install deps → systemd → Cloudflare DNS → verify loop" }],
     };
   }
 );
@@ -97,7 +110,7 @@ server.tool(
 
 server.tool(
   "add_server",
-  "Add a target server. Call multiple times to add many servers.",
+  "Add a target server at runtime. Call multiple times to add many servers.",
   {
     name: z.string().min(1).describe("Unique label (e.g. web-1)"),
     host: z.string().min(1).describe("IP or hostname"),
@@ -153,9 +166,9 @@ server.tool(
 
 server.tool(
   "remove_server",
-  "Remove a registered server by name or ID",
+  "Remove a registered server by name",
   {
-    server: z.string().min(1).describe("Server name or ID"),
+    server: z.string().min(1).describe("Server name"),
   },
   async (args) => {
     const start = Date.now();
@@ -183,21 +196,17 @@ server.tool(
 
 server.tool(
   "list_servers",
-  "List all registered servers",
+  "List all registered servers (from env config + runtime additions)",
   {},
   async () => {
-    const servers = loadServers();
-    const envServer = loadEnvServer();
-    const all = [...servers];
-    if (envServer && !servers.find(s => s.id === envServer.id)) {
-      all.unshift(envServer);
-    }
+    const all = getAllServers();
     if (all.length === 0) {
-      return { content: [{ type: "text", text: "No servers registered. Use add_server to add one." }] };
+      return { content: [{ type: "text", text: "No servers configured. Use add_server or set SERVER_1_HOST env vars." }] };
     }
     const lines = all.map(s => {
       const auth = s.authMethod === "password" ? "password" : `key: ${s.privateKeyPath ?? "inline"}`;
-      return `- ${s.name} → ${s.username}@${s.host}:${s.port} [${auth}] (id: ${s.id})`;
+      const source = s.id.startsWith("env-") ? "[env]" : "[runtime]";
+      return `- ${s.name} → ${s.username}@${s.host}:${s.port} [${auth}] ${source} (id: ${s.id})`;
     });
     return { content: [{ type: "text", text: lines.join("\n") }] };
   }
@@ -209,7 +218,7 @@ server.tool(
   "run_command",
   "Execute any shell command as root on a specific server. No restrictions.",
   {
-    server: z.string().min(1).describe("Server name or ID"),
+    server: z.string().min(1).describe("Server name (e.g. server-1, web-1)"),
     command: z.string().min(1).describe("Any shell command"),
     timeoutSec: z.number().int().min(1).max(3600).default(30).describe("Timeout in seconds"),
   },
@@ -246,7 +255,7 @@ server.tool(
   "deploy_file",
   "Upload files to a specific server and run deployment commands",
   {
-    server: z.string().min(1).describe("Server name or ID"),
+    server: z.string().min(1).describe("Server name"),
     files: z.array(
       z.object({
         localPath: z.string().optional().describe("Local file path"),
@@ -306,7 +315,7 @@ server.tool(
   "check_status",
   "Test SSH connectivity to a specific server",
   {
-    server: z.string().min(1).describe("Server name or ID"),
+    server: z.string().min(1).describe("Server name"),
   },
   async (args) => {
     const start = Date.now();
@@ -340,16 +349,12 @@ server.tool(
   },
   async (args) => {
     const start = Date.now();
-    const servers = loadServers();
-    const envServer = loadEnvServer();
-    if (envServer && !servers.find(s => s.id === envServer.id)) {
-      servers.unshift(envServer);
-    }
-    if (servers.length === 0) {
-      return { content: [{ type: "text", text: "No servers registered." }], isError: true };
+    const all = getAllServers();
+    if (all.length === 0) {
+      return { content: [{ type: "text", text: "No servers configured." }], isError: true };
     }
     const results: string[] = [];
-    for (const entry of servers) {
+    for (const entry of all) {
       try {
         const client = await getConnection(entry);
         const result = await execCommand(client, args.command, args.timeoutSec * 1000);
@@ -361,8 +366,8 @@ server.tool(
         results.push(`${entry.name}: ERROR — ${err.message}`);
       }
     }
-    const text = [`Command on all ${servers.length} server(s): ${args.command}`, ...results].join("\n");
-    audit("run_all", "*", args, `ran on ${servers.length}`, Date.now() - start);
+    const text = [`Command on all ${all.length} server(s): ${args.command}`, ...results].join("\n");
+    audit("run_all", "*", args, `ran on ${all.length}`, Date.now() - start);
     return { content: [{ type: "text", text }] };
   }
 );
@@ -372,12 +377,12 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  const envServer = loadEnvServer();
-  const servers = loadServers();
-  const total = servers.length + (envServer ? 1 : 0);
+
+  const all = getAllServers();
   console.error(
-    `ServerAsMcp v0.4.0 (stdio) | ${total} server(s) registered | skill: ${skillContent ? "loaded" : "fallback"} | config: ${getConfigDir()}`
+    `ServerAsMcp v0.4.0 (stdio) | ${all.length} server(s) from env config | skill: ${skillContent ? "loaded" : "fallback"} | config: ${getConfigDir()}`
   );
+
   process.on("SIGINT", () => { closeAllConnections(); process.exit(0); });
   process.on("SIGTERM", () => { closeAllConnections(); process.exit(0); });
 }

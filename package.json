@@ -1,6 +1,6 @@
 {
   "name": "serverasmcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "ServerAsMcp — MCP deployment server for AI agents to execute commands on remote Linux servers via SSH",
   "license": "MIT",
   "type": "module",
@@ -8,7 +8,10 @@
   "bin": {
     "serverasmcp": "dist/index.js"
   },
-  "files": ["dist", "skills"],
+  "files": [
+    "dist",
+    "skills"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
