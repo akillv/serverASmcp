@@ -1,6 +1,6 @@
 [project]
 name = "serverasmcp"
-version = "0.4.5"
+version = "0.4.6"
 description = "MCP server that gives AI agents unrestricted root SSH access to unlimited Linux servers. Execute any command, deploy files, configure Cloudflare DNS, and self-heal deployments."
 readme = "README.md"
 license = { text = "MIT" }

@@ -234,7 +234,7 @@ def main() -> None:
     servers = load_servers()
     import sys
     print(
-        f"ServerAsMcp v0.4.4 (stdio) | {len(servers)} server(s) | skill: {'loaded' if _skill_content else 'fallback'} | config: {get_config_dir()}",
+        f"ServerAsMcp v0.4.6 (stdio) | {len(servers)} server(s) | skill: {'loaded' if _skill_content else 'fallback'} | config: {get_config_dir()}",
         file=sys.stderr,
     )
     app.run("stdio")
