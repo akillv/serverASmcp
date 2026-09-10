@@ -20,7 +20,7 @@ Requirements:
 - A disposable Linux test server or local SSH container
 
 ```bash
-git clone https://github.com/arun-raze19/serverASmcp.git
+git clone https://github.com/akillv/serverASmcp.git
 cd serverASmcp
 npm install
 npm run build

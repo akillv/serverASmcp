@@ -6,7 +6,7 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
 authors = [
-    { name = "Arun", url = "https://github.com/arun-raze19" },
+    { name = "Arun", url = "https://github.com/akillv" },
 ]
 keywords = [
     "mcp",
@@ -51,10 +51,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/arun-raze19/serverASmcp"
-Repository = "https://github.com/arun-raze19/serverASmcp"
-Issues = "https://github.com/arun-raze19/serverASmcp/issues"
-Documentation = "https://github.com/arun-raze19/serverASmcp#readme"
+Homepage = "https://github.com/akillv/serverASmcp"
+Repository = "https://github.com/akillv/serverASmcp"
+Issues = "https://github.com/akillv/serverASmcp/issues"
+Documentation = "https://github.com/akillv/serverASmcp#readme"
 
 [project.scripts]
 serverasmcp = "mcp_deploy_server.main:main"

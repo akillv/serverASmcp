@@ -10,7 +10,7 @@ This calendar assumes Day 1 is the day you finish assets, not necessarily the da
 - [ ] Confirm the headline says agent-native deployment, not only root SSH access.
 - [ ] Confirm SSH-key auth is the first quick-start option.
 - [ ] Update GitHub description and topics from `github-metadata.md`.
-- [ ] Change every package/repository URL from the old owner to `arun-raze19/serverASmcp`.
+- [ ] Change every package/repository URL to the canonical `akillv/serverASmcp` location.
 - [ ] Commit and push documentation updates.
 
 **Completion signal:** A visitor can answer “what is this, who is it for, and how do I try it?” in 30 seconds.

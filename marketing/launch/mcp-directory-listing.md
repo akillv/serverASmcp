@@ -67,8 +67,8 @@ ServerAsMcp is designed for trusted single-operator environments. It provides no
 
 ## Links
 
-- Repository: https://github.com/arun-raze19/serverASmcp
+- Repository: https://github.com/akillv/serverASmcp
 - npm: https://www.npmjs.com/package/serverasmcp
 - PyPI: https://pypi.org/project/serverasmcp/
-- Issues: https://github.com/arun-raze19/serverASmcp/issues
-- Security policy: https://github.com/arun-raze19/serverASmcp/blob/main/SECURITY.md
+- Issues: https://github.com/akillv/serverASmcp/issues
+- Security policy: https://github.com/akillv/serverASmcp/blob/main/SECURITY.md

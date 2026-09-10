@@ -27,7 +27,7 @@ Before use:
 
 Do **not** report exploitable details in a public GitHub issue.
 
-Use GitHub private vulnerability reporting for `arun-raze19/serverASmcp` if available. If unavailable, contact the maintainer through a private channel listed on the GitHub profile.
+Use GitHub private vulnerability reporting for `akillv/serverASmcp` if available. If unavailable, contact the maintainer through a private channel listed on the GitHub profile.
 
 Include:
 

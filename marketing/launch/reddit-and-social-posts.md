@@ -32,7 +32,7 @@ uvx serverasmcp
 
 It works with Codex, Claude, Cursor, and other MCP clients over stdio. It is deliberately unrestricted for single-operator environments, so SSH-key auth is strongly recommended. It is not for untrusted agents, shared fleets, or enterprises needing centralized RBAC.
 
-Repo and docs: https://github.com/arun-raze19/serverASmcp
+Repo and docs: https://github.com/akillv/serverASmcp
 
 What deployment workflow would you want the built-in skill to handle next: Docker Compose, FastAPI, Next.js, static sites, or database-backed apps?
 
@@ -46,7 +46,7 @@ ServerAsMcp is an MCP server that lets Codex, Claude, Cursor, and other agents r
 
 It is not a control plane and has no web UI. It runs as a local stdio MCP process, opens no network listener, and logs operations to `~/.mcp-deploy/audit.log`. It gives the agent the same access as the configured SSH identity, so use SSH keys and treat it as a power tool for servers you control.
 
-Repository: https://github.com/arun-raze19/serverASmcp
+Repository: https://github.com/akillv/serverASmcp
 
 Feedback I’d find most useful: what guardrails would make you comfortable using it on a staging VPS—command allowlists, confirmation gates, dry-run mode, or scoped SSH identities?
 
@@ -60,7 +60,7 @@ I built ServerAsMcp, an MCP server that turns Codex, Claude, or Cursor into a Li
 
 It’s available through `npx serverasmcp` or `uvx serverasmcp`. It’s deliberately powerful—single-operator use only, SSH-key auth recommended, not for untrusted agents.
 
-Repo: https://github.com/arun-raze19/serverASmcp
+Repo: https://github.com/akillv/serverASmcp
 
 ## Reddit: r/devops
 
@@ -72,7 +72,7 @@ I’m testing ServerAsMcp as an agent-native alternative to hand-writing deploym
 
 I’m positioning it narrowly: solo operators and small teams who already trust their agent with direct server access. It has no sandbox or RBAC and is not intended for zero-trust environments. Node and Python runtimes are available via npm and PyPI.
 
-Repo: https://github.com/arun-raze19/serverASmcp
+Repo: https://github.com/akillv/serverASmcp
 
 What would this need before you would run it against a staging server: scoped identities, destructive-command detection, dry-run mode, or explicit confirmation gates?
 
@@ -117,7 +117,7 @@ ServerAsMcp is deliberately unrestricted for single-operator use. Use SSH keys. 
 
 Available via npx or uvx:
 
-https://github.com/arun-raze19/serverASmcp
+https://github.com/akillv/serverASmcp
 ```
 
 ### Reply CTA
@@ -134,7 +134,7 @@ ServerAsMcp is an agent-native MCP server for real Linux deployment. Codex, Clau
 
 It is available through npm and PyPI. I positioned it for solo operators, consultants, and small teams managing servers they control—not enterprises needing centralized RBAC or zero-trust policy enforcement.
 
-Repository: https://github.com/arun-raze19/serverASmcp
+Repository: https://github.com/akillv/serverASmcp
 
 What deployment workflow would you want agent-native first: Docker Compose, Next.js, FastAPI, or database-backed applications?
 

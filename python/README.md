@@ -11,7 +11,7 @@ Let your agent deploy to real Linux servers, configure DNS, and fix the deployme
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/Protocol-MCP-blue?style=flat-square)](https://modelcontextprotocol.io)
 
-[Quick Start](#-quick-start) · [Who It Is For](#-who-this-is-for) · [Security](#-security) · [Tools](#-tools) · [Deployment Skill](#-deployment-skill) · [Contributing](https://github.com/arun-raze19/serverASmcp/blob/main/CONTRIBUTING.md)
+[Quick Start](#-quick-start) · [Who It Is For](#-who-this-is-for) · [Security](#-security) · [Tools](#-tools) · [Deployment Skill](#-deployment-skill) · [Contributing](https://github.com/akillv/serverASmcp/blob/main/CONTRIBUTING.md)
 
 </div>
 
@@ -435,7 +435,7 @@ uvx serverasmcp
 ### From source
 
 ```bash
-git clone https://github.com/arun-raze19/serverASmcp.git
+git clone https://github.com/akillv/serverASmcp.git
 cd serverASmcp
 npm install && npm run build
 node dist/index.js
@@ -446,7 +446,7 @@ node dist/index.js
 ## 🤝 Contributing
 
 ```bash
-git clone https://github.com/arun-raze19/serverASmcp.git
+git clone https://github.com/akillv/serverASmcp.git
 cd serverASmcp
 npm install
 npm run build

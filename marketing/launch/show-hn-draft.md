@@ -11,7 +11,7 @@ Recommended: **Show HN: ServerAsMcp – Agent-native Linux deployment MCP** beca
 ## Submission URL
 
 ```text
-https://github.com/arun-raze19/serverASmcp
+https://github.com/akillv/serverASmcp
 ```
 
 ## First comment

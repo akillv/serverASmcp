@@ -150,7 +150,7 @@ web-1 looks down. Check it, fix the issue, and verify production again.
 ```text
 ServerAsMcp lets Codex, Claude, Cursor, and other MCP agents deploy a repo to a real Linux server, configure Cloudflare DNS, and self-heal failures until the HTTPS URL is live. Runs via npx or uvx. Deliberately unrestricted for trusted single-operator use—SSH-key auth recommended.
 
-https://github.com/arun-raze19/serverASmcp
+https://github.com/akillv/serverASmcp
 ```
 
 ## Recording notes

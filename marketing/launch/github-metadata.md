@@ -9,7 +9,7 @@ Agent-native deployment MCP for Linux servers: run commands, deploy files, confi
 ## Website / homepage
 
 ```text
-https://github.com/arun-raze19/serverASmcp#readme
+https://github.com/akillv/serverASmcp#readme
 ```
 
 ## Topics
@@ -80,6 +80,6 @@ Use these exact spellings in public assets:
 
 - Product name: **ServerAsMcp**
 - npm/PyPI package: **serverasmcp**
-- Repository owner/path: **arun-raze19/serverASmcp**
+- Repository owner/path: **akillv/serverASmcp**
 
-Before release, update all package metadata and source-clone URLs from the old `akillv/serverASmcp` references to `arun-raze19/serverASmcp`.
+Before release, ensure every package metadata and source-clone URL points to `akillv/serverASmcp`.

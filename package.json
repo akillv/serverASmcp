@@ -15,15 +15,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arun-raze19/serverASmcp.git"
+    "url": "git+https://github.com/akillv/serverASmcp.git"
   },
-  "homepage": "https://github.com/arun-raze19/serverASmcp#readme",
+  "homepage": "https://github.com/akillv/serverASmcp#readme",
   "bugs": {
-    "url": "https://github.com/arun-raze19/serverASmcp/issues"
+    "url": "https://github.com/akillv/serverASmcp/issues"
   },
   "author": {
     "name": "Arun",
-    "url": "https://github.com/arun-raze19"
+    "url": "https://github.com/akillv"
   },
   "scripts": {
     "build": "tsc",
