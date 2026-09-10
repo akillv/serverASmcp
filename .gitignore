@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.omx/
+__pycache__/
+*.pyc
+*.egg-info/
+.python-version

@@ -1,0 +1,30 @@
+{
+  "name": "mcp-deploy-server",
+  "version": "0.3.0",
+  "description": "MCP deployment server — AI agents execute commands on remote Linux servers via SSH",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-deploy-server": "dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "deployment",
+    "ssh",
+    "ai-agents",
+    "codex",
+    "claude",
+    "devops",
+    "remote-execution"
+  ]
+}
