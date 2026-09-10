@@ -1,8 +1,10 @@
-"""MCP Deploy Server - main entry point."""
+"""ServerAsMcp - main entry point."""
 
 import json
+import os
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
 from mcp.server import Server
@@ -28,7 +30,20 @@ from .ssh import (
     upload_file,
 )
 
-app = Server("mcp-deploy-server")
+app = Server("ServerAsMcp")
+
+# Load skill file
+_SKILL_PATHS = [
+    Path(__file__).parent.parent.parent / "skills" / "server-as-mcp" / "SKILL.md",
+    Path(__file__).parent / "skills" / "server-as-mcp" / "SKILL.md",
+    Path.cwd() / "skills" / "server-as-mcp" / "SKILL.md",
+]
+
+_skill_content = ""
+for _p in _SKILL_PATHS:
+    if _p.exists():
+        _skill_content = _p.read_text("utf-8")
+        break
 
 
 def _resolve_server(id_or_name: str) -> ServerEntry | None:
@@ -45,6 +60,11 @@ def _sanitize_args(args: dict[str, Any]) -> str:
 
 
 TOOLS = [
+    Tool(
+        name="get_skill",
+        description="Get the ServerAsMcp deployment skill instructions. Call this FIRST before deploying.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
     Tool(
         name="add_server",
         description="Add a target server. Call multiple times to add many servers.",
@@ -149,7 +169,9 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     start = time.monotonic()
 
-    if name == "add_server":
+    if name == "get_skill":
+        result = _skill_content or "Skill not found. Follow: add_server → check_status → git push → install deps → systemd → Cloudflare DNS → verify loop."
+    elif name == "add_server":
         result = await _add_server(arguments)
     elif name == "list_servers":
         result = await _list_servers()
@@ -309,7 +331,7 @@ async def main() -> None:
         servers = load_servers()
         import sys
         print(
-            f"MCP Deploy Server v0.3.0 (stdio) | {len(servers)} server(s) registered | config: {get_config_dir()}",
+            f"ServerAsMcp v0.4.0 (stdio) | {len(servers)} server(s) | skill: {'loaded' if _skill_content else 'fallback'} | config: {get_config_dir()}",
             file=sys.stderr,
         )
         await app.run(read_stream, write_stream, app.create_initialization_options())

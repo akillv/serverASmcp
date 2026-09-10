@@ -4,6 +4,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import { readFileSync, existsSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import {
   loadServers,
   addServer,
@@ -14,7 +17,6 @@ import {
   getConfigDir,
   type ServerEntry,
   type AuditEntry,
-  DeploymentFileSchema,
 } from "./types.js";
 import { appendAudit } from "./config.js";
 import {
@@ -26,10 +28,27 @@ import {
   uploadContent,
 } from "./ssh.js";
 
+// ─── Load skill file content at startup ──────────────────────────────────────
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SKILL_PATHS = [
+  join(__dirname, "..", "skills", "server-as-mcp", "SKILL.md"),
+  join(__dirname, "skills", "server-as-mcp", "SKILL.md"),
+  join(process.cwd(), "skills", "server-as-mcp", "SKILL.md"),
+];
+
+let skillContent = "";
+for (const p of SKILL_PATHS) {
+  if (existsSync(p)) {
+    skillContent = readFileSync(p, "utf-8");
+    break;
+  }
+}
+
 // ─── MCP Server ──────────────────────────────────────────────────────────────
 
 const server = new McpServer(
-  { name: "mcp-deploy-server", version: "0.3.0" },
+  { name: "ServerAsMcp", version: "0.4.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -58,32 +77,45 @@ function audit(toolName: string, serverName: string, args: Record<string, unknow
   appendAudit(entry);
 }
 
+// ─── Tool: get_skill ─────────────────────────────────────────────────────────
+
+server.tool(
+  "get_skill",
+  "Get the ServerAsMcp deployment skill instructions. Call this FIRST before deploying to understand the full workflow.",
+  {},
+  async () => {
+    if (skillContent) {
+      return { content: [{ type: "text", text: skillContent }] };
+    }
+    return {
+      content: [{ type: "text", text: "Skill file not found. Follow these steps:\n1. add_server → check_status\n2. Git push if remote exists\n3. Install runtimes on server\n4. Clone repo → install deps\n5. Create systemd service → start\n6. Cloudflare DNS → point to server\n7. Verify loop → fix errors until live" }],
+    };
+  }
+);
+
 // ─── Tool: add_server ────────────────────────────────────────────────────────
 
 server.tool(
   "add_server",
-  "Add a target server. Can be called multiple times to add many servers.",
+  "Add a target server. Call multiple times to add many servers.",
   {
-    name: z.string().min(1).describe("Unique label for this server (e.g. 'web-1', 'db-primary')"),
-    host: z.string().min(1).describe("IP address or hostname"),
+    name: z.string().min(1).describe("Unique label (e.g. web-1)"),
+    host: z.string().min(1).describe("IP or hostname"),
     port: z.number().int().min(1).max(65535).default(22).describe("SSH port"),
     username: z.string().min(1).default("root").describe("SSH username"),
     authMethod: z.enum(["password", "private_key"]).describe("Auth method"),
-    password: z.string().optional().describe("SSH password (if auth_method=password)"),
-    privateKeyPath: z.string().optional().describe("Path to SSH private key file"),
-    privateKey: z.string().optional().describe("SSH private key content (inline)"),
+    password: z.string().optional().describe("SSH password"),
+    privateKeyPath: z.string().optional().describe("Path to SSH key"),
+    privateKey: z.string().optional().describe("SSH key content"),
   },
   async (args) => {
     const start = Date.now();
     try {
-      // Check name uniqueness
       if (findServerByName(args.name)) {
         const text = `Server name '${args.name}' already exists. Use a different name.`;
         audit("add_server", args.name, args, text, Date.now() - start);
         return { content: [{ type: "text", text }], isError: true };
       }
-
-      // Validate auth method has credentials
       if (args.authMethod === "password" && !args.password) {
         const text = "Password is required when authMethod is 'password'.";
         audit("add_server", args.name, args, text, Date.now() - start);
@@ -94,7 +126,6 @@ server.tool(
         audit("add_server", args.name, args, text, Date.now() - start);
         return { content: [{ type: "text", text }], isError: true };
       }
-
       const entry: ServerEntry = {
         id: randomUUID(),
         name: args.name,
@@ -106,7 +137,6 @@ server.tool(
         privateKeyPath: args.privateKeyPath,
         privateKey: args.privateKey,
       };
-
       addServer(entry);
       const text = `Server '${args.name}' added (${args.username}@${args.host}:${args.port}). ID: ${entry.id}`;
       audit("add_server", args.name, args, text, Date.now() - start);
@@ -125,7 +155,7 @@ server.tool(
   "remove_server",
   "Remove a registered server by name or ID",
   {
-    server: z.string().min(1).describe("Server name or ID to remove"),
+    server: z.string().min(1).describe("Server name or ID"),
   },
   async (args) => {
     const start = Date.now();
@@ -136,10 +166,9 @@ server.tool(
         audit("remove_server", args.server, args, text, Date.now() - start);
         return { content: [{ type: "text", text }], isError: true };
       }
-
       const removed = removeServer(entry.id);
       closeConnection(entry.id);
-      const text = removed ? `Server '${args.server}' removed.` : `Failed to remove server.`;
+      const text = removed ? `Server '${args.server}' removed.` : `Failed to remove.`;
       audit("remove_server", args.server, args, text, Date.now() - start);
       return { content: [{ type: "text", text }] };
     } catch (err: any) {
@@ -180,8 +209,8 @@ server.tool(
   "run_command",
   "Execute any shell command as root on a specific server. No restrictions.",
   {
-    server: z.string().min(1).describe("Server name or ID to run the command on"),
-    command: z.string().min(1).describe("Any shell command to execute"),
+    server: z.string().min(1).describe("Server name or ID"),
+    command: z.string().min(1).describe("Any shell command"),
     timeoutSec: z.number().int().min(1).max(3600).default(30).describe("Timeout in seconds"),
   },
   async (args) => {
@@ -193,7 +222,6 @@ server.tool(
         audit("run_command", args.server, args, text, Date.now() - start);
         return { content: [{ type: "text", text }], isError: true };
       }
-
       const client = await getConnection(entry);
       const result = await execCommand(client, args.command, args.timeoutSec * 1000);
       const output = [
@@ -221,12 +249,12 @@ server.tool(
     server: z.string().min(1).describe("Server name or ID"),
     files: z.array(
       z.object({
-        localPath: z.string().optional().describe("Local file path to upload"),
+        localPath: z.string().optional().describe("Local file path"),
         content: z.string().optional().describe("Inline file content"),
-        remotePath: z.string().min(1).describe("Destination path on server"),
+        remotePath: z.string().min(1).describe("Destination path"),
       })
     ).min(1).describe("Files to upload"),
-    remoteDir: z.string().default("/tmp").describe("Working directory for commands"),
+    remoteDir: z.string().default("/tmp").describe("Working directory"),
     commands: z.array(z.string()).default([]).describe("Commands to run after upload"),
   },
   async (args) => {
@@ -238,10 +266,8 @@ server.tool(
         audit("deploy_file", args.server, args, text, Date.now() - start);
         return { content: [{ type: "text", text }], isError: true };
       }
-
       const client = await getConnection(entry);
       const results: string[] = [];
-
       for (const file of args.files) {
         if (file.localPath) {
           await uploadFile(client, file.localPath, file.remotePath);
@@ -251,7 +277,6 @@ server.tool(
           results.push(`Wrote ${file.remotePath} (${file.content.length} chars)`);
         }
       }
-
       for (const cmd of args.commands) {
         const prefixed = `cd ${args.remoteDir} && ${cmd}`;
         try {
@@ -265,7 +290,6 @@ server.tool(
           results.push(`$ ${cmd} → ERROR: ${cmdErr.message}`);
         }
       }
-
       const text = [`Server: ${entry.name}`, ...results].join("\n");
       audit("deploy_file", entry.name, args, `${args.files.length} files, ${args.commands.length} commands`, Date.now() - start);
       return { content: [{ type: "text", text }] };
@@ -282,7 +306,7 @@ server.tool(
   "check_status",
   "Test SSH connectivity to a specific server",
   {
-    server: z.string().min(1).describe("Server name or ID to check"),
+    server: z.string().min(1).describe("Server name or ID"),
   },
   async (args) => {
     const start = Date.now();
@@ -293,7 +317,6 @@ server.tool(
         audit("check_status", args.server, args, text, Date.now() - start);
         return { content: [{ type: "text", text }], isError: true };
       }
-
       const client = await getConnection(entry);
       const result = await execCommand(client, "echo ok && uname -a && whoami", 5000);
       const text = `${entry.name}: connected\n${result.stdout.trim()}`;
@@ -325,7 +348,6 @@ server.tool(
     if (servers.length === 0) {
       return { content: [{ type: "text", text: "No servers registered." }], isError: true };
     }
-
     const results: string[] = [];
     for (const entry of servers) {
       try {
@@ -339,7 +361,6 @@ server.tool(
         results.push(`${entry.name}: ERROR — ${err.message}`);
       }
     }
-
     const text = [`Command on all ${servers.length} server(s): ${args.command}`, ...results].join("\n");
     audit("run_all", "*", args, `ran on ${servers.length}`, Date.now() - start);
     return { content: [{ type: "text", text }] };
@@ -351,14 +372,12 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-
   const envServer = loadEnvServer();
   const servers = loadServers();
   const total = servers.length + (envServer ? 1 : 0);
   console.error(
-    `MCP Deploy Server v0.3.0 (stdio) | ${total} server(s) registered | config: ${getConfigDir()}`
+    `ServerAsMcp v0.4.0 (stdio) | ${total} server(s) registered | skill: ${skillContent ? "loaded" : "fallback"} | config: ${getConfigDir()}`
   );
-
   process.on("SIGINT", () => { closeAllConnections(); process.exit(0); });
   process.on("SIGTERM", () => { closeAllConnections(); process.exit(0); });
 }

@@ -1,7 +1,7 @@
 [project]
-name = "mcp-deploy-server"
+name = "serverasmcp"
 version = "0.3.0"
-description = "MCP deployment server for AI agents to execute commands on remote servers"
+description = "ServerAsMcp — MCP deployment server for AI agents to execute commands on remote Linux servers"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mcp-deploy-server = "mcp_deploy_server.main:main"
+serverasmcp = "mcp_deploy_server.main:main"
 
 [build-system]
 requires = ["hatchling"]
