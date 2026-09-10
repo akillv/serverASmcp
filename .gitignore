@@ -6,3 +6,8 @@ __pycache__/
 *.pyc
 *.egg-info/
 .python-version
+
+# Local-only smoke scripts (never commit connection tests)
+/serverasmcp-mcp-test.mjs
+/python-mcp-test-fixed.mjs
+/trace-deploy-mcp.mjs
