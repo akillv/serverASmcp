@@ -51,7 +51,7 @@ I’m most interested in feedback on the MCP tool boundaries, deployment workflo
 ### “This is dangerous.”
 
 ```text
-Yes. The danger is the explicit product tradeoff. The configured agent has the same access as the configured SSH identity. I do not market it as safe for untrusted agents or shared fleets. The current mitigations are local credentials, SSH-key recommendation, stdio transport with no listener, audit logging, staging-first use, and immediate key rotation after suspicion. Policy controls are on the roadmap.
+Yes. The danger is the explicit product tradeoff. The configured agent has the same access as the configured SSH identity. I explicitly do not recommend it for untrusted agents or shared fleets. The current mitigations are local credentials, SSH-key recommendation, stdio transport with no listener, audit logging, staging-first use, and immediate key rotation after suspicion. Policy controls are on the roadmap.
 ```
 
 ### “Why not use CI/CD?”
