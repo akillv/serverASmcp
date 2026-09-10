@@ -48,7 +48,7 @@ for (const p of SKILL_PATHS) {
 // ─── MCP Server ──────────────────────────────────────────────────────────────
 
 const server = new McpServer(
-  { name: "ServerAsMcp", version: "0.4.0" },
+  { name: "ServerAsMcp", version: "0.4.3" },
   { capabilities: { tools: {} } }
 );
 
@@ -380,7 +380,7 @@ async function main() {
 
   const all = getAllServers();
   console.error(
-    `ServerAsMcp v0.4.0 (stdio) | ${all.length} server(s) from env config | skill: ${skillContent ? "loaded" : "fallback"} | config: ${getConfigDir()}`
+    `ServerAsMcp v0.4.3 (stdio) | ${all.length} server(s) from env config | skill: ${skillContent ? "loaded" : "fallback"} | config: ${getConfigDir()}`
   );
 
   process.on("SIGINT", () => { closeAllConnections(); process.exit(0); });

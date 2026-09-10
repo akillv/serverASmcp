@@ -7,9 +7,8 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.server.fastmcp import FastMCP
+from mcp.types import TextContent
 
 from .models import (
     ServerEntry,
@@ -30,7 +29,7 @@ from .ssh import (
     upload_file,
 )
 
-app = Server("ServerAsMcp")
+app = FastMCP("ServerAsMcp")
 
 # Load skill file
 _SKILL_PATHS = [
@@ -59,139 +58,44 @@ def _sanitize_args(args: dict[str, Any]) -> str:
     return json.dumps(sanitized)
 
 
-TOOLS = [
-    Tool(
-        name="get_skill",
-        description="Get the ServerAsMcp deployment skill instructions. Call this FIRST before deploying.",
-        inputSchema={"type": "object", "properties": {}},
-    ),
-    Tool(
-        name="add_server",
-        description="Add a target server. Call multiple times to add many servers.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "name": {"type": "string", "description": "Unique label (e.g. web-1)"},
-                "host": {"type": "string", "description": "IP or hostname"},
-                "port": {"type": "integer", "default": 22, "description": "SSH port"},
-                "username": {"type": "string", "default": "root", "description": "SSH user"},
-                "authMethod": {"type": "string", "enum": ["password", "private_key"]},
-                "password": {"type": "string", "description": "SSH password"},
-                "privateKeyPath": {"type": "string", "description": "Path to SSH key"},
-                "privateKey": {"type": "string", "description": "SSH key content"},
-            },
-            "required": ["name", "host", "authMethod"],
-        },
-    ),
-    Tool(
-        name="list_servers",
-        description="List all registered servers",
-        inputSchema={"type": "object", "properties": {}},
-    ),
-    Tool(
-        name="remove_server",
-        description="Remove a server by name",
-        inputSchema={
-            "type": "object",
-            "properties": {"server": {"type": "string", "description": "Server name"}},
-            "required": ["server"],
-        },
-    ),
-    Tool(
-        name="run_command",
-        description="Execute any shell command as root on a specific server. No restrictions.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "server": {"type": "string", "description": "Server name or ID"},
-                "command": {"type": "string", "description": "Shell command"},
-                "timeoutSec": {"type": "integer", "default": 30},
-            },
-            "required": ["server", "command"],
-        },
-    ),
-    Tool(
-        name="run_all",
-        description="Execute the same command on ALL servers",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "command": {"type": "string"},
-                "timeoutSec": {"type": "integer", "default": 30},
-            },
-            "required": ["command"],
-        },
-    ),
-    Tool(
-        name="deploy_file",
-        description="Upload files and run commands on a specific server",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "server": {"type": "string", "description": "Server name or ID"},
-                "files": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "localPath": {"type": "string"},
-                            "content": {"type": "string"},
-                            "remotePath": {"type": "string"},
-                        },
-                        "required": ["remotePath"],
-                    },
-                    "minItems": 1,
-                },
-                "remoteDir": {"type": "string", "default": "/tmp"},
-                "commands": {"type": "array", "items": {"type": "string"}, "default": []},
-            },
-            "required": ["server", "files"],
-        },
-    ),
-    Tool(
-        name="check_status",
-        description="Test SSH connectivity to a server",
-        inputSchema={
-            "type": "object",
-            "properties": {"server": {"type": "string"}},
-            "required": ["server"],
-        },
-    ),
-]
+@app.tool(name="get_skill", description="Get the ServerAsMcp deployment skill instructions. Call this FIRST before deploying.")
+def _get_skill() -> str:
+    return _skill_content or "Skill not found. Follow: add_server → check_status → git push → install deps → systemd → Cloudflare DNS → verify loop."
 
 
-@app.list_tools()
-async def list_tools() -> list[Tool]:
-    return TOOLS
+@app.tool(name="add_server", description="Add a target server. Call multiple times to add many servers.")
+async def _add_server_tool(name: str, host: str, port: int = 22, username: str = "root", authMethod: str = "password", password: str | None = None, privateKeyPath: str | None = None, privateKey: str | None = None) -> str:
+    return await _add_server({"name": name, "host": host, "port": port, "username": username, "authMethod": authMethod, "password": password, "privateKeyPath": privateKeyPath, "privateKey": privateKey})
 
 
-@app.call_tool()
-async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
-    start = time.monotonic()
+@app.tool(name="list_servers", description="List all registered servers")
+async def _list_servers_tool() -> str:
+    return await _list_servers()
 
-    if name == "get_skill":
-        result = _skill_content or "Skill not found. Follow: add_server → check_status → git push → install deps → systemd → Cloudflare DNS → verify loop."
-    elif name == "add_server":
-        result = await _add_server(arguments)
-    elif name == "list_servers":
-        result = await _list_servers()
-    elif name == "remove_server":
-        result = await _remove_server(arguments)
-    elif name == "run_command":
-        result = await _run_command(arguments)
-    elif name == "run_all":
-        result = await _run_all(arguments)
-    elif name == "deploy_file":
-        result = await _deploy_file(arguments)
-    elif name == "check_status":
-        result = await _check_status(arguments)
-    else:
-        result = f"Unknown tool: {name}"
 
-    duration_ms = int((time.monotonic() - start) * 1000)
-    server_name = arguments.get("server", arguments.get("name", "*"))
-    append_audit(name, str(server_name), _sanitize_args(arguments), result[:200], duration_ms)
-    return [TextContent(type="text", text=result)]
+@app.tool(name="remove_server", description="Remove a server by name")
+async def _remove_server_tool(server: str) -> str:
+    return await _remove_server({"server": server})
+
+
+@app.tool(name="run_command", description="Execute any shell command on a specific server. No restrictions.")
+async def _run_command_tool(server: str, command: str, timeoutSec: int = 30) -> str:
+    return await _run_command({"server": server, "command": command, "timeoutSec": timeoutSec})
+
+
+@app.tool(name="run_all", description="Execute the same command on ALL servers")
+async def _run_all_tool(command: str, timeoutSec: int = 30) -> str:
+    return await _run_all({"command": command, "timeoutSec": timeoutSec})
+
+
+@app.tool(name="deploy_file", description="Upload files and run commands on a specific server")
+async def _deploy_file_tool(server: str, files: list[dict[str, Any]], remoteDir: str = "/tmp", commands: list[str] | None = None) -> str:
+    return await _deploy_file({"server": server, "files": files, "remoteDir": remoteDir, "commands": commands or []})
+
+
+@app.tool(name="check_status", description="Test SSH connectivity to a server")
+async def _check_status_tool(server: str) -> str:
+    return await _check_status({"server": server})
 
 
 async def _add_server(args: dict[str, Any]) -> str:
@@ -326,17 +230,15 @@ async def _check_status(args: dict[str, Any]) -> str:
         return f"{args.get('server')}: connection failed — {e}"
 
 
-async def main() -> None:
-    async with stdio_server() as (read_stream, write_stream):
-        servers = load_servers()
-        import sys
-        print(
-            f"ServerAsMcp v0.4.0 (stdio) | {len(servers)} server(s) | skill: {'loaded' if _skill_content else 'fallback'} | config: {get_config_dir()}",
-            file=sys.stderr,
-        )
-        await app.run(read_stream, write_stream, app.create_initialization_options())
+def main() -> None:
+    servers = load_servers()
+    import sys
+    print(
+        f"ServerAsMcp v0.4.3 (stdio) | {len(servers)} server(s) | skill: {'loaded' if _skill_content else 'fallback'} | config: {get_config_dir()}",
+        file=sys.stderr,
+    )
+    app.run("stdio")
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    main()

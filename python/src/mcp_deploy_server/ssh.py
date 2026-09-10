@@ -79,7 +79,7 @@ async def exec_command(
             timeout=timeout_sec,
         )
         return {
-            "exit_code": result.exit_code or 0,
+            "exit_code": getattr(result, "exit_status", 0) or 0,
             "stdout": result.stdout or "",
             "stderr": result.stderr or "",
         }

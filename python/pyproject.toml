@@ -1,6 +1,6 @@
 [project]
 name = "serverasmcp"
-version = "0.4.2"
+version = "0.4.3"
 description = "MCP server that gives AI agents unrestricted root SSH access to unlimited Linux servers. Execute any command, deploy files, configure Cloudflare DNS, and self-heal deployments."
 readme = "README.md"
 license = { text = "MIT" }
@@ -45,8 +45,8 @@ classifiers = [
     "Topic :: System :: Systems Administration",
 ]
 dependencies = [
-    "mcp>=1.0.0",
-    "asyncssh>=2.14.0",
+    "mcp>=1.0.0,<2.0.0",
+    "asyncssh>=2.14.0,<2.22.0",
     "pydantic>=2.0.0",
 ]
 

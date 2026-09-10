@@ -25,16 +25,20 @@ function buildConnectConfig(server: ServerEntry): ConnectConfig {
   return config;
 }
 
+const connecting = new Map<string, Promise<Client>>();
+
 export async function getConnection(server: ServerEntry): Promise<Client> {
   // Check pool for existing connection
   const existing = connections.get(server.id);
   if (existing) {
     try {
       await new Promise<void>((resolve, reject) => {
-        existing.exec("true", (err, stream) => {
-          if (err) return reject(err);
-          stream.on("close", () => resolve()).on("error", reject);
-        });
+        const alive = existing as unknown as {
+          _callbacks: Array<(hadError: boolean) => void>;
+          _protocol: { ping: () => void };
+        };
+        alive._callbacks.push((hadError: boolean) => hadError ? reject(new Error("SSH keepalive failed")) : resolve());
+        alive._protocol.ping();
       });
       return existing;
     } catch {
