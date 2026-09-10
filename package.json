@@ -1,6 +1,6 @@
 {
   "name": "serverasmcp",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "MCP server that gives AI agents unrestricted root SSH access to unlimited Linux servers. Execute any command, deploy files, configure Cloudflare DNS, and self-heal deployments until production is live.",
   "longDescription": "ServerAsMcp is a Model Context Protocol (MCP) server that lets AI agents (Codex, Claude, Cursor, etc.) connect to and control unlimited remote Linux servers over SSH. Define servers via SERVER_N_HOST/SERVER_N_PASSWORD env vars, and your agent can execute any shell command as root, upload files via SFTP, configure Cloudflare DNS to make apps publicly live, and run a self-healing deployment loop that reads logs, diagnoses errors, fixes them, and retries until production is confirmed. Includes a built-in deployment skill (get_skill tool) that teaches the agent the full 7-phase workflow: server registration, Git detection, runtime installation, application deployment, systemd service configuration, Cloudflare DNS setup, and production verification.",
   "license": "MIT",
@@ -55,5 +55,16 @@
     "root-access",
     "linux",
     "serverasmcp"
-  ]
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ssh2": "^1.17.0",
+    "zod": "^4.6.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.0",
+    "@types/ssh2": "^1.15.5",
+    "tsx": "^4.20.3"
+  }
 }
