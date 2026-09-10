@@ -65,6 +65,13 @@ Configure a server once. Then ask Codex, Claude, Cursor, or another MCP agent to
 4. If something fails, it reads logs, diagnoses the issue, applies a fix, and retries.
 5. Finish with `systemctl`, localhost, and the public HTTPS URL all verified.
 
+<p align="center">
+  <img src="marketing/demo/demo-workflow-preview.gif" width="900" alt="Simulated ServerAsMcp workflow preview showing an agent deploying an app to a Linux server, configuring DNS, and self-healing a failure.">
+  <br>
+  <strong>Simulated workflow preview.</strong>
+  <a href="marketing/demo/demo-workflow-preview.mp4">Download the 30-second MP4</a> or see <a href="marketing/demo/README.md">asset provenance</a>.
+</p>
+
 ## ⭐ Build with me
 
 If you want production-ready examples for **Next.js, FastAPI, Docker Compose, static sites, and database-backed apps**, star the repository. Stars help me prioritize the next deployment workflow and make the project easier for other developers to find.

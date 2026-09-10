@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ServerAsMcp Workflow Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; }
+  body {
+    font-family: Inter, "Liberation Sans", Arial, sans-serif;
+    background: #08101f;
+    color: #e6edf6;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 74px;
+    padding: 0 36px;
+    background: #0b1425;
+    border-bottom: 1px solid rgba(56, 189, 248, .22);
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 33px; height: 33px; border-radius: 9px;
+    background: linear-gradient(135deg, #38bdf8, #22c55e);
+  }
+  .brand strong { font-size: 24px; letter-spacing: -.02em; }
+  .badge {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    color: #fde68a; background: rgba(253, 230, 138, .12);
+    border: 1px solid rgba(253, 230, 138, .35);
+    padding: 8px 11px; border-radius: 999px;
+  }
+  main {
+    display: grid;
+    grid-template-columns: 490px 1fr;
+    gap: 22px;
+    padding: 22px 36px;
+    min-height: 0;
+  }
+  .card {
+    background: #0b1524;
+    border: 1px solid #1f2d44;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(2, 8, 23, .48);
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 15px;
+    background: #101c2f;
+    border-bottom: 1px solid #24344e;
+    font-size: 13px; color: #93a6bd;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .red { background: #ff5f57; } .yellow { background: #febc2e; } .green { background: #28c840; }
+  .card-head span.label { margin-left: 6px; }
+  .agent { padding: 17px; display: flex; flex-direction: column; gap: 14px; }
+  .prompt {
+    background: #081020; border: 1px solid #274b64; border-radius: 11px;
+    padding: 16px; font: 16px/1.45 "Liberation Mono", monospace; color: #bae6fd;
+  }
+  .prompt .cursor { display: inline-block; width: 9px; height: 19px; background: #38bdf8; vertical-align: -3px; }
+  .fact { display: flex; justify-content: space-between; font-size: 15px; color: #9fb0c6; }
+  .fact b { color: #dbeafe; font-weight: 600; }
+  .terminal {
+    height: 100%; padding: 16px 18px;
+    font: 15px/1.75 "Liberation Mono", monospace;
+    background: #071120; white-space: pre-wrap;
+  }
+  .cmd { color: #dbeafe; }
+  .ok { color: #4ade80; }
+  .warn { color: #fbbf24; }
+  .dim { color: #7387a2; }
+  .dns { color: #38bdf8; }
+  .stage { color: #7dd3fc; font-weight: 700; }
+  footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 13px 36px 21px; font-size: 14px; color: #7e93ab;
+  }
+  .live { display: flex; align-items: center; gap: 8px; color: #c9d5e3; }
+  .browser {
+    width: min(48%, 470px); height: 57px;
+    background: #0b1524; border: 1px solid #29405d; border-radius: 999px;
+    display: flex; align-items: center; padding: 0 19px; gap: 10px;
+    font: 14px "Liberation Mono", monospace; color: #d1e7ff;
+    white-space: nowrap; overflow: hidden;
+  }
+  .check { color: #22c55e; font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+    <strong>ServerAsMcp</strong>
+  </div>
+  <div class="badge">Simulated workflow preview</div>
+</header>
+<main>
+  <section class="card">
+    <div class="card-head"><i class="dot red"></i><i class="dot yellow"></i><i class="dot green"></i><span class="label">agent</span></div>
+    <div class="agent">
+      <div class="prompt"><span id="prompt"></span><span class="cursor"></span></div>
+      <div class="fact"><span>MCP transport</span><b>local stdio</b></div>
+      <div class="fact"><span>SSH auth</span><b>dedicated key</b></div>
+      <div class="fact"><span>Target</span><b>web-1 · example VPS</b></div>
+      <div class="fact"><span>Output domain</span><b>app.example.com</b></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-head"><i class="dot red"></i><i class="dot yellow"></i><i class="dot green"></i><span class="label">terminal</span></div>
+    <div class="terminal"><span id="terminal"></span><span style="display:inline-block;width:9px;height:17px;background:#38bdf8"></span></div>
+  </section>
+</main>
+<footer>
+  <div id="phase" class="stage">Initialization</div>
+  <div class="live"><span class="check">✓</span> <span class="browser" id="url">app.example.com</span></div>
+</footer>
+<script>
+const lines = [
+  ['$ get_skill()', 'dim', 2],
+  ['  ✓ 7-phase deployment workflow loaded', 'ok', 3],
+  ['$ check_status(server="web-1")', 'cmd', 5],
+  ['  ✓ SSH connected · Ubuntu 24.04 · 2 vCPU · 3.8 GB', 'ok', 7],
+  ['$ git clone --depth 1 REPO /opt/app', 'cmd', 9],
+  ['  ✓ repository received', 'ok', 10],
+  ['$ npm ci && npm run build', 'cmd', 12],
+  ['  ✓ dependencies installed', 'ok', 14],
+  ['  ✓ production build complete', 'ok', 15],
+  ['$ create systemd unit: app.service', 'cmd', 17],
+  ['$ systemctl enable --now app', 'cmd', 19],
+  ['  ✓ systemctl is-active app → active', 'ok', 21],
+  ['$ curl -f http://127.0.0.1:3000/healthz', 'cmd', 22],
+  ['  ✓ localhost → 200 OK', 'ok', 23],
+  ['$ configure Cloudflare A record → 203.0.113.5', 'dns', 25],
+  ['  ✓ proxied DNS created (example only)', 'dns', 27],
+  ['$ systemctl stop app  # deliberate test failure', 'warn', 29],
+  ['  ⚠ localhost unreachable', 'warn', 31],
+  ['$ journalctl -u app --no-pager -n 30', 'cmd', 33],
+  ['  diagnosis: service stopped after deployment', 'dim', 35],
+  ['$ systemctl start app', 'cmd', 37],
+  ['$ verify systemctl + localhost + public URL', 'cmd', 39],
+  ['  ✓ service active · localhost 200 · example URL 200', 'ok', 42],
+  ['Production verified. Example workflow complete.', 'ok', 48],
+];
+const frame = Number(new URLSearchParams(location.search).get('frame') || 0);
+const promptText = 'Deploy my repo to web-1 and make it live';
+document.getElementById('prompt').textContent = promptText.slice(0, Math.min(frame - 1, promptText.length));
+const shown = [];
+for (const [text, css, revealAt] of lines) {
+  if (frame >= revealAt) shown.push(`<span class="${css}">${text}</span>`);
+}
+document.getElementById('terminal').innerHTML = shown.join('\n');
+const phases = [[0,'Initialization'],[3,'MCP handshake'],[6,'Server preparation'],[10,'Deployment'],[16,'Service setup'],[22,'Health verification'],[25,'DNS configuration'],[29,'Failure injection'],[33,'Diagnosis'],[37,'Self-healing'],[42,'Production verified']];
+document.getElementById('phase').textContent = phases.slice().reverse().find(([at]) => frame >= at)[1];
+if (frame < 25) document.getElementById('url').textContent = 'waiting for DNS…';
+if (frame >= 29 && frame < 37) {
+  document.getElementById('url').textContent = 'service unavailable';
+  document.querySelector('.check').textContent = '⚠';
+  document.querySelector('.check').style.color = '#fbbf24';
+}
+</script>
+</body>
+</html>

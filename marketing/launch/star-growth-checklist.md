@@ -9,6 +9,8 @@ This checklist records what has been implemented in the repository and what stil
 - [x] Create the first five example specifications: static site, Next.js, FastAPI, Docker Compose, and database-backed app.
 - [x] Define production verification and cleanup requirements for every example.
 - [x] Create a 1280×640 social-preview source and rendered PNG.
+- [x] Add a clearly labeled 30-second simulated workflow preview in GIF and MP4 form.
+- [x] Add a repeatable renderer for the workflow preview.
 - [x] Keep the trust boundary visible in launch-facing materials.
 
 ## GitHub settings requiring repository-owner access
@@ -131,6 +133,6 @@ Pin those three issues after opening them.
 - [ ] Publish a package release containing the updated README and metadata.
 - [ ] Verify the npm page shows the new positioning.
 - [ ] Verify the PyPI page shows the new positioning.
-- [ ] Record the 60–90 second demo and embed it in the README.
+- [ ] Record the live 60–90 second disposable-VPS demo and replace the simulated workflow preview in the README.
 - [ ] Submit to MCP directories.
 - [ ] Open PRs to awesome MCP and AI-agent lists.
